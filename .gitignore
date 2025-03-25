@@ -2,4 +2,9 @@
 .env
 .env.local
 .env.development
-.env.production 
+.env.production
+.env*
+
+# JavaScript environment files
+js/env.js
+**/env.js 
