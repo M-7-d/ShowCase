@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - STONES COMPANY</title>
+    <link rel="icon" href="img/logo_icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header id="header">
+        <nav class="container">
+            <a href="index.html" class="logo"><img src="img/logo.png" alt="STONES COMPANY"></a>
+            <div class="links" id="links">
+                <span class="close_menu"><i class="fa-solid fa-xmark"></i></span>
+                <a href="index.html" class="logo mobile-logo"><img src="img/logo.png" alt="STONES COMPANY"></a>
+                <a href="index.html">Home</a>
+                <a href="index.html#services">Products</a>
+                <a href="index.html#products">Include</a>
+                <a href="admin.html">Admin</a>
+            </div>
+            <div class="icons">
+                <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://wa.me/+905301288498" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <span id="menu-toggle" class="icon_menu"><i class="fa-solid fa-bars"></i></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Product Details Section -->
+    <section class="product-details" id="productDetails">
+        <div class="container">
+            <div class="product-content">
+                <div class="product-details-content">
+                    <div class="product-image">
+                        <button class="image-nav prev" onclick="navigateImages('prev')">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="image-nav next" onclick="navigateImages('next')">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="main-image-container">
+                            <img src="/placeholder.svg" alt="" id="productMainImage">
+                        </div>
+                        <div class="additional-images" id="additionalImages"></div>
+                    </div>
+                    <div class="product-info">
+                        <h2 id="productName"></h2>
+                        <span class="product-category" id="productCategory"></span>
+                        <p class="product-description" id="productDescription"></p>
+                        <div class="product-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Product ID:</span>
+                                <span id="productId"></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Category:</span>
+                                <span id="productCategoryMeta"></span>
+                            </div>
+                        </div>
+                        <div class="product-actions">
+                            <a href="https://wa.me/+905301288498" target="_blank" class="whatsapp-btn" id="whatsappBtn">
+                                <i class="fab fa-whatsapp"></i>
+                                Contact on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© <span id="current-year"></span> STONES COMPANY. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/cart.js"></script>
+</body>
+
+</html>
