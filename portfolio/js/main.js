@@ -11,6 +11,288 @@ let currentPage = 1;
 const productsPerPage = 9;
 let allProducts = [];
 
+// Function to update all translatable elements
+function updateTranslations() {
+    // Update elements with data-translate attribute
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        element.textContent = getTranslation(key);
+    });
+
+    // Update elements with data-translate-placeholder attribute
+    document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-translate-placeholder');
+        element.placeholder = getTranslation(key);
+    });
+}
+
+// Function to update language
+function updateLanguage(lang) {
+    setCurrentLang(lang);
+    
+    // Update language buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+
+    // Update translations
+    updateTranslations();
+    
+    // Reload products to update their translations
+    loadProducts();
+}
+
+// Initialize all responsive functionality
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Document loaded, initializing...');
+    handleResponsive();
+    setupScrollAnimations();
+    initializeApp();
+
+    // Initialize language
+    const currentLang = getCurrentLang();
+    updateLanguage(currentLang);
+    
+    // Add language switcher event listeners
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            updateLanguage(btn.dataset.lang);
+        });
+    });
+
+    // Enhanced search functionality with debounce
+    const searchInput = document.getElementById('searchProducts');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce((e) => {
+            currentPage = 1; // Reset to first page on new search
+            loadProducts(e.target.value);
+        }, 300));
+    }
+
+    // Admin sayfasına yönlendirme için event listener
+    const adminLink = document.querySelector('a[href="admin.html"]');
+    if (adminLink) {
+        adminLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'admin.html#login';
+        });
+    }
+});
+
+// Fetch and display products from Supabase with improved error handling
+async function loadProducts(searchQuery = '') {
+    if (!supabase) {
+        console.error('Supabase client not initialized');
+        return;
+    }
+
+    const productCards = document.getElementById('productCards');
+    const paginationContainer = document.getElementById('pagination');
+
+    if (!productCards) {
+        return;
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        productCards.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            productCards.innerHTML = `<p class="no-products">${getTranslation('noProducts')}</p>`;
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        // Filter products based on search query
+        allProducts = searchQuery
+            ? data.filter(product =>
+                product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                product.description.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            : data;
+
+        // Calculate pagination
+        const totalPages = Math.ceil(allProducts.length / productsPerPage);
+        const startIndex = (currentPage - 1) * productsPerPage;
+        const endIndex = startIndex + productsPerPage;
+        const currentProducts = allProducts.slice(startIndex, endIndex);
+
+        // Get current language direction
+        const isRTL = getCurrentLang() === 'ar';
+
+        // Display current page products
+        currentProducts.forEach(product => {
+            const primaryImage = getFirstImage(product.image_urls);
+            const productName = isRTL ? product.name_ar || product.name : product.name;
+            const productDesc = isRTL ? product.description_ar || product.description : product.description;
+            const productCategory = isRTL ? product.category_ar || product.category : product.category;
+
+            productCards.innerHTML += `
+            <div class="product-card" style="width: 500px;">
+                <div class="product-image" style="height: 100%; width: 100%;">
+                    <img src="${primaryImage}" alt="${productName}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div class="product-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                        <a href="cart.html?id=${product.id}" class="view-details-btn">
+                            <i class="fas fa-eye"></i> <font color="white">${getTranslation('viewDetails')}</font>
+                        </a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <span class="category"><font color="black">${productCategory}</font></span>
+                    <h3 class="product-title"><font color="black">${productName}</font></h3>
+                    <p class="product-description"><font color="black">${productDesc}</font></p>
+                    <div class="product-actions">
+                        <a href="cart.html?id=${product.id}" class="details-btn">
+                            <i class="fas fa-shopping-cart"></i> <font color="white">${getTranslation('viewDetails')}</font>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        // Update pagination
+        updatePagination(totalPages);
+
+    } catch (error) {
+        console.error('Error fetching products:', error.message);
+        if (productCards) {
+            productCards.innerHTML = `<p class="error-message">${getTranslation('error')}</p>`;
+        }
+    }
+}
+
+// Function to update pagination buttons
+function updatePagination(totalPages) {
+    const paginationContainer = document.getElementById('pagination');
+    if (!paginationContainer) return;
+
+    let paginationHTML = '';
+    const isRTL = getCurrentLang() === 'ar';
+
+    // Previous button
+    paginationHTML += `
+        <button class="pagination-btn" 
+                onclick="changePage(${currentPage - 1})" 
+                ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-${isRTL ? 'right' : 'left'}"></i>
+        </button>
+    `;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        paginationHTML += `
+            <button class="pagination-btn ${currentPage === i ? 'active' : ''}" 
+                    onclick="changePage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    // Next button
+    paginationHTML += `
+        <button class="pagination-btn" 
+                onclick="changePage(${currentPage + 1})" 
+                ${currentPage === totalPages ? 'disabled' : ''}>
+            <i class="fas fa-chevron-${isRTL ? 'left' : 'right'}"></i>
+        </button>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
+}
+
+// Function to change page
+function changePage(newPage) {
+    if (newPage < 1 || newPage > Math.ceil(allProducts.length / productsPerPage)) return;
+    currentPage = newPage;
+    loadProducts();
+}
+
+// Handle contact form submission with improved error handling
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {  // Only add event listener if form exists
+    contactForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (!supabase) {
+            console.error('Supabase client not initialized');
+            alert(getTranslation('systemError'));
+            return;
+        }
+
+        const form = e.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        // Disable submit button to prevent double submission
+        submitButton.disabled = true;
+        submitButton.textContent = getTranslation('sending');
+
+        const formData = {
+            full_name: form.fullName.value,
+            email: form.email.value,
+            mobile: form.mobile.value,
+            subject: form.subject.value,
+            message: form.message.value,
+            created_at: new Date().toISOString()
+        };
+
+        try {
+            const { error } = await supabase
+                .from('contacts')
+                .insert([formData]);
+
+            if (error) throw error;
+
+            alert(getTranslation('messageSent'));
+            form.reset();
+        } catch (error) {
+            console.error('Error submitting form:', error.message);
+            alert(getTranslation('submitError'));
+        } finally {
+            // Re-enable submit button
+            submitButton.disabled = false;
+            submitButton.textContent = getTranslation('send');
+        }
+    });
+}
+
+// Helper function to get first image
+function getFirstImage(imageUrls) {
+    if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
+        return DEFAULT_IMAGE;
+    }
+    return imageUrls[0];
+}
+
+// Wait for document and Supabase to be ready
+function initializeApp() {
+    if (initializeSupabase()) {
+        loadProducts();
+    } else {
+        console.log('Retrying Supabase initialization in 500ms...');
+        setTimeout(initializeApp, 500);
+    }
+}
+
+// Add debounce function if not already present
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 // Helper function to initialize Supabase
 function initializeSupabase() {
     try {
@@ -160,237 +442,4 @@ function setupScrollAnimations() {
         element.style.transition = 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)';
         observer.observe(element);
     });
-}
-
-// Initialize all responsive functionality
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Document loaded, initializing...');
-    handleResponsive();
-    setupScrollAnimations();
-    initializeApp();
-
-    // Enhanced search functionality with debounce
-    const searchInput = document.getElementById('searchProducts');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce((e) => {
-            currentPage = 1; // Reset to first page on new search
-            loadProducts(e.target.value);
-        }, 300));
-    }
-
-    // Admin sayfasına yönlendirme için event listener
-    const adminLink = document.querySelector('a[href="admin.html"]');
-    if (adminLink) {
-        adminLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'admin.html#login';
-        });
-    }
-});
-
-// Fetch and display products from Supabase with improved error handling
-async function loadProducts(searchQuery = '') {
-    if (!supabase) {
-        console.error('Supabase client not initialized');
-        return;
-    }
-
-    const productCards = document.getElementById('productCards');
-    const paginationContainer = document.getElementById('pagination');
-
-    if (!productCards) {
-        return;
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('id', { ascending: true });
-
-        if (error) throw error;
-
-        productCards.innerHTML = '';
-
-        if (!data || data.length === 0) {
-            productCards.innerHTML = '<p class="no-products">No products available at the moment.</p>';
-            paginationContainer.innerHTML = '';
-            return;
-        }
-
-        // Filter products based on search query
-        allProducts = searchQuery
-            ? data.filter(product =>
-                product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.description.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            : data;
-
-        // Calculate pagination
-        const totalPages = Math.ceil(allProducts.length / productsPerPage);
-        const startIndex = (currentPage - 1) * productsPerPage;
-        const endIndex = startIndex + productsPerPage;
-        const currentProducts = allProducts.slice(startIndex, endIndex);
-
-        // Display current page products
-        currentProducts.forEach(product => {
-            const primaryImage = getFirstImage(product.image_urls);
-
-            productCards.innerHTML += `
-            <div class="product-card" style="width: 500px;">
-    <div class="product-image" style="height: 100%; width: 100%;">
-        <img src="${primaryImage}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">
-        <div class="product-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-            <a href="cart.html?id=${product.id}" class="view-details-btn">
-                <i class="fas fa-eye"></i> <font color="white">View Details</font>
-            </a>
-        </div>
-    </div>
-    <div class="product-info">
-        <span class="category"><font color="black">${product.category}</font></span>
-        <h3 class="product-title"><font color="black">${product.name}</font></h3>
-        <p class="product-description"><font color="black">${product.description}</font></p>
-        <div class="product-actions">
-            <a href="cart.html?id=${product.id}" class="details-btn">
-                <i class="fas fa-shopping-cart"></i> <font color="white">View Details</font>
-            </a>
-        </div>
-    </div>
-</div>
-            `;
-        });
-
-        // Update pagination
-        updatePagination(totalPages);
-
-    } catch (error) {
-        console.error('Error fetching products:', error.message);
-        if (productCards) {
-            productCards.innerHTML = '<p class="error-message">Failed to load products. Please try again later.</p>';
-        }
-    }
-}
-
-// Function to update pagination buttons
-function updatePagination(totalPages) {
-    const paginationContainer = document.getElementById('pagination');
-    if (!paginationContainer) return;
-
-    let paginationHTML = '';
-
-    // Previous button
-    paginationHTML += `
-        <button class="pagination-btn" 
-                onclick="changePage(${currentPage - 1})" 
-                ${currentPage === 1 ? 'disabled' : ''}>
-            <i class="fas fa-chevron-left"></i>
-        </button>
-    `;
-
-    // Page numbers
-    for (let i = 1; i <= totalPages; i++) {
-        paginationHTML += `
-            <button class="pagination-btn ${currentPage === i ? 'active' : ''}" 
-                    onclick="changePage(${i})">
-                ${i}
-            </button>
-        `;
-    }
-
-    // Next button
-    paginationHTML += `
-        <button class="pagination-btn" 
-                onclick="changePage(${currentPage + 1})" 
-                ${currentPage === totalPages ? 'disabled' : ''}>
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    `;
-
-    paginationContainer.innerHTML = paginationHTML;
-}
-
-// Function to change page
-function changePage(newPage) {
-    if (newPage < 1 || newPage > Math.ceil(allProducts.length / productsPerPage)) return;
-    currentPage = newPage;
-    loadProducts();
-}
-
-// Handle contact form submission with improved error handling
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {  // Only add event listener if form exists
-    contactForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        if (!supabase) {
-            console.error('Supabase client not initialized');
-            alert('System error. Please try again later.');
-            return;
-        }
-
-        const form = e.target;
-        const submitButton = form.querySelector('button[type="submit"]');
-
-        // Disable submit button to prevent double submission
-        submitButton.disabled = true;
-        submitButton.textContent = 'Sending...';
-
-        const formData = {
-            full_name: form.fullName.value,
-            email: form.email.value,
-            mobile: form.mobile.value,
-            subject: form.subject.value,
-            message: form.message.value,
-            created_at: new Date().toISOString()
-        };
-
-        try {
-            const { error } = await supabase
-                .from('contacts')
-                .insert([formData]);
-
-            if (error) throw error;
-
-            alert('Message sent successfully!');
-            form.reset();
-        } catch (error) {
-            console.error('Error submitting form:', error.message);
-            alert('There was an error submitting your message. Please try again.');
-        } finally {
-            // Re-enable submit button
-            submitButton.disabled = false;
-            submitButton.textContent = 'Send Message';
-        }
-    });
-}
-
-// Helper function to get first image
-function getFirstImage(imageUrls) {
-    if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
-        return DEFAULT_IMAGE;
-    }
-    return imageUrls[0];
-}
-
-// Wait for document and Supabase to be ready
-function initializeApp() {
-    if (initializeSupabase()) {
-        loadProducts();
-    } else {
-        console.log('Retrying Supabase initialization in 500ms...');
-        setTimeout(initializeApp, 500);
-    }
-}
-
-// Add debounce function if not already present
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
 }

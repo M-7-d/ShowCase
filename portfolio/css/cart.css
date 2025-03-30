@@ -168,6 +168,10 @@ body {
     overflow: hidden;
 }
 
+.whatsapp-btn span {
+    color: #ffffff;
+}
+
 .whatsapp-btn::before {
     content: '';
     position: absolute;

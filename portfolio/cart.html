@@ -15,6 +15,8 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
     <meta name="theme-color" content="#f8fafc">
+    <!-- Translations -->
+    <script src="js/translations.js"></script>
 </head>
 
 <body>
@@ -31,10 +33,10 @@
                         <img src="img/logo.png" alt="STONES COMPANY">
                     </a>
                 </div>
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="index.html#services" class="nav-link">Products</a>
-                <a href="index.html#products" class="nav-link">Include</a>
-                <a href="admin.html" class="nav-link">Admin</a>
+                <a href="index.html" class="nav-link" data-translate="home">Home</a>
+                <a href="index.html#services" class="nav-link" data-translate="products">Products</a>
+                <a href="index.html#products" class="nav-link" data-translate="include">Include</a>
+                <a href="admin.html" class="nav-link" data-translate="admin">Admin</a>
             </div>
             <div class="icons">
                 <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank" class="social-icon">
@@ -76,18 +78,18 @@
                         <p class="product-description" id="productDescription"></p>
                         <div class="product-meta">
                             <div class="meta-item">
-                                <span class="meta-label">Product ID:</span>
+                                <span class="meta-label" data-translate="productId">Product ID:</span>
                                 <span id="productId"></span>
                             </div>
-                            <div class="meta-item">\
-                                <span class="meta-label">Category:</span>
+                            <div class="meta-item">
+                                <span class="meta-label" data-translate="productCategory">Category:</span>
                                 <span id="productCategoryMeta"></span>
                             </div>
                         </div>
                         <div class="product-actions">
                             <a href="https://wa.me/+905301288498" target="_blank" class="whatsapp-btn" id="whatsappBtn">
                                 <i class="fab fa-whatsapp"></i>
-                                Contact on WhatsApp
+                                <span data-translate="contactWhatsapp">Contact on WhatsApp</span>
                             </a>
                         </div>
                     </div>
@@ -99,7 +101,7 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <p>© <span id="current-year"></span> STONES COMPANY. All Rights Reserved.</p>
+            <p>© <span id="current-year"></span> STONES COMPANY. <span data-translate="copyright">All Rights Reserved.</span></p>
         </div>
     </footer>
 

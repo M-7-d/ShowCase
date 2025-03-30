@@ -11,6 +11,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/home.css">
+    <!-- Translations -->
+    <script src="js/translations.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -20,12 +22,17 @@
             <div class="links" id="links">
                 <span class="close_menu"><i class="fa-solid fa-xmark"></i></span>
                 <a href="#" class="logo mobile-logo"><img src="img/logo.png" alt="STONES COMPANY"></a>
-                <a class="active" href="#">Home</a>
-                <a href="#services">Products</a>
-                <a href="#products">Include</a>
-                <a href="admin.html">Admin</a>      
+                <a class="active" href="#" data-translate="home">Home</a>
+                <a href="#services" data-translate="products">Products</a>
+                <a href="#products" data-translate="include">Include</a>
+                <a href="admin.html" data-translate="admin">Admin</a>      
             </div>
             <div class="icons">
+                <div class="language-switcher">
+                    <button class="lang-btn" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="ar">عربي</button>
+                    <button class="lang-btn" data-lang="tr">TR</button>
+                </div>
                 <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
                 <a href="https://wa.me/+905301288498" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
                 <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
@@ -38,11 +45,17 @@
     <div class="hero">
         <div class="container">
             <div class="div_Text">
-                <h4>Welcome to</h4>
+                <h4 data-translate="welcome">Welcome to</h4>
                 <h1><span>STONES.</span></h1>
-                <p>📣 We proudly offer the finest PVC and aluminum parts and accessories! Whether you're looking for high quality, we're here to provide everything you need.</p>
+                <p data-translate="heroText">📣 We proudly offer the finest PVC and aluminum parts and accessories! Whether you're looking for high quality, we're here to provide everything you need.</p>
                 <div class="btns">
-                    <a href="#services" class="btn primary-btn">Our Products</a>
+                    <a href="#services" class="btn primary-btn" data-translate="ourProducts">Our Products</a>
+                </div>
+            </div>
+            <div class="div_design">
+                <div class="design-element">
+                    <div class="circle"></div>
+                    <div class="square"></div>
                 </div>
             </div>
         </div>
@@ -52,8 +65,8 @@
     <section class="featured-products" id="services">
         <div class="container">
             <div class="top_section">
-                <h2>Our Featured <span>Products</span></h2>
-                <p>Explore our high-quality selection of PVC and aluminum parts</p>
+                <h2 data-translate="featuredProducts">Our Featured Products</h2>
+                <p data-translate="exploreProducts">Explore our high-quality selection of PVC and aluminum parts</p>
                 <!-- Add search bar -->
                 <div class="search-container mt-4">
                     <div class="input-group mx-auto" style="max-width: 500px;">
@@ -63,7 +76,7 @@
                         <input type="text" 
                                id="searchProducts" 
                                class="form-control border-start-0" 
-                               placeholder="Search products..."
+                               data-translate-placeholder="searchProducts"
                                style="background: rgba(255, 255, 255, 0.1); color: white;">
                     </div>
                 </div>
@@ -72,7 +85,7 @@
                 <!-- Product cards will be loaded dynamically -->
                 <div class="loading-state">
                     <div class="spinner"></div>
-                    <p>Loading products...</p>
+                    <p data-translate="loading">Loading products...</p>
                 </div>
             </div>
             <div class="pagination" id="pagination">
@@ -85,29 +98,29 @@
     <section class="projects" id="products">
         <div class="container">
             <div class="top_section">
-                <h2>🔧 Our products <span>include:</span></h2>
+                <h2 data-translate="productsInclude">Our products include:</h2>
             </div>
             <div class="project_box">
                 <img src="img/project1.jpg" alt="PVC Parts">
                 <div class="text">
-                    <h4><span>Products</span></h4>
-                    <h3><a href="#">High-quality PVC parts</a></h3>
+                    <h4><span data-translate="products">Products</span></h4>
+                    <h3><a href="#" data-translate="highQualityPVC">High-quality PVC parts</a></h3>
                     <a href="#" class="link"><i class="fa-solid fa-arrow-up"></i></a>
                 </div>
             </div>
             <div class="project_box project_box_2">
                 <img src="img/project2.jpg" alt="Aluminum Parts">
                 <div class="text">
-                    <h4><span>Products</span></h4>
-                    <h3><a href="#">Durable aluminum parts</a></h3>
+                    <h4><span data-translate="products">Products</span></h4>
+                    <h3><a href="#" data-translate="durableAluminum">Durable aluminum parts</a></h3>
                     <a href="#" class="link"><i class="fa-solid fa-arrow-up"></i></a>
                 </div>
             </div>
             <div class="project_box">
                 <img src="img/project3.jpg" alt="Accessories">
                 <div class="text">
-                    <h4><span>Products</span></h4>
-                    <h3><a href="#">A wide range of accessories</a></h3>
+                    <h4><span data-translate="products">Products</span></h4>
+                    <h3><a href="#" data-translate="accessories">A wide range of accessories</a></h3>
                     <a href="#" class="link"><i class="fa-solid fa-arrow-up"></i></a>
                 </div>
             </div>
@@ -118,23 +131,23 @@
     <section class="why-choose-us">
         <div class="container">
             <div class="top_section">
-                <h1>🌟 Why choose <span>Stones?</span></h1>
+                <h1 data-translate="whyChooseUs">Why choose Stones?</h1>
             </div>
             <div class="features">
                 <div class="feature-card">
                     <div class="icon-wrapper"><i class="fa-solid fa-medal"></i></div>
-                    <h2><a href="#">Unparalleled quality</a></h2>
-                    <p>Our products undergo rigorous quality control to ensure they meet the highest standards.</p>
+                    <h2><a href="#" data-translate="quality">Unparalleled quality</a></h2>
+                    <p data-translate="qualityDesc">Our products undergo rigorous quality control to ensure they meet the highest standards.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon-wrapper"><i class="fa-solid fa-tags"></i></div>
-                    <h2><a href="#">Competitive prices</a></h2>
-                    <p>We offer the best value for your investment without compromising on quality.</p>
+                    <h2><a href="#" data-translate="prices">Competitive prices</a></h2>
+                    <p data-translate="pricesDesc">We offer the best value for your investment without compromising on quality.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon-wrapper"><i class="fa-solid fa-headset"></i></div>
-                    <h2><a href="#">Excellent customer service</a></h2>
-                    <p>Our dedicated team is always ready to assist you with any inquiries or support needs.</p>
+                    <h2><a href="#" data-translate="service">Excellent customer service</a></h2>
+                    <p data-translate="serviceDesc">Our dedicated team is always ready to assist you with any inquiries or support needs.</p>
                 </div>
             </div>
         </div>
@@ -143,7 +156,7 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <p>© <span id="current-year"></span> STONES COMPANY. All Rights Reserved.</p>
+            <p>© <span id="current-year"></span> STONES COMPANY. <span data-translate="copyright">All Rights Reserved.</span></p>
         </div>
     </footer>
 

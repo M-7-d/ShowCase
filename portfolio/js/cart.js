@@ -3,6 +3,31 @@ const supabaseUrl = 'https://uvrozprcewgwybuhguai.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cm96cHJjZXdnd3lidWhndWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NTI1MTAsImV4cCI6MjA1ODMyODUxMH0.2EgqTZjwcOv_kKP38g9nsou1ECsR_ybnAaGZduXWlaQ';
 let supabase;
 
+// Function to update all translatable elements
+function updateTranslations() {
+    // Update elements with data-translate attribute
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        element.textContent = getTranslation(key);
+    });
+}
+
+// Function to update language
+function updateLanguage(lang) {
+    setCurrentLang(lang);
+    
+    // Update language buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+
+    // Update translations
+    updateTranslations();
+    
+    // Reload product details to update translations
+    loadProductDetails();
+}
+
 // Initialize Supabase
 function initializeSupabase() {
     try {
@@ -58,10 +83,13 @@ async function loadProductDetails() {
 
 // Update UI with product data
 function updateProductUI(data) {
-    updateElement('productName', data.name);
-    updateElement('productCategory', data.category);
-    updateElement('productCategoryMeta', data.category);
-    updateElement('productDescription', data.description);
+    const isRTL = getCurrentLang() === 'ar';
+    
+    // Update product information with translations
+    updateElement('productName', isRTL ? data.name_ar || data.name : data.name);
+    updateElement('productCategory', isRTL ? data.category_ar || data.category : data.category);
+    updateElement('productCategoryMeta', isRTL ? data.category_ar || data.category : data.category);
+    updateElement('productDescription', isRTL ? data.description_ar || data.description : data.description);
     updateElement('productId', data.id);
     
     updateProductImages(data);
@@ -71,6 +99,8 @@ function updateProductUI(data) {
 // Update element with fade animation
 function updateElement(elementId, value) {
     const element = document.getElementById(elementId);
+    if (!element) return;
+    
     element.classList.add('fade-out');
     setTimeout(() => {
         element.textContent = value;
@@ -99,7 +129,7 @@ function updateProductImages(data) {
     }
 
     mainImage.src = productImages[0];
-    mainImage.alt = data.name;
+    mainImage.alt = getCurrentLang() === 'ar' ? data.name_ar || data.name : data.name;
 
     updateThumbnails();
 }
@@ -134,10 +164,16 @@ function changeMainImage(src, index) {
 function navigateImages(direction) {
     if (!productImages.length) return;
 
+    const isRTL = getCurrentLang() === 'ar';
+    
     if (direction === 'next') {
-        currentImageIndex = (currentImageIndex + 1) % productImages.length;
+        currentImageIndex = isRTL ? 
+            (currentImageIndex - 1 + productImages.length) % productImages.length :
+            (currentImageIndex + 1) % productImages.length;
     } else {
-        currentImageIndex = (currentImageIndex - 1 + productImages.length) % productImages.length;
+        currentImageIndex = isRTL ?
+            (currentImageIndex + 1) % productImages.length :
+            (currentImageIndex - 1 + productImages.length) % productImages.length;
     }
 
     changeMainImage(productImages[currentImageIndex], currentImageIndex);
@@ -146,7 +182,10 @@ function navigateImages(direction) {
 // Update WhatsApp button
 function updateWhatsAppButton(data) {
     const whatsappBtn = document.getElementById('whatsappBtn');
-    const message = encodeURIComponent(`Hi, I'm interested in ${data.name} (${data.category}). Can you provide more information?`);
+    const isRTL = getCurrentLang() === 'ar';
+    const productName = isRTL ? data.name_ar || data.name : data.name;
+    const productCategory = isRTL ? data.category_ar || data.category : data.category;
+    const message = encodeURIComponent(`${getTranslation('whatsappMessage')} ${productName} (${productCategory})`);
     whatsappBtn.href = `https://wa.me/905301288498?text=${message}`;
 }
 
@@ -203,7 +242,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeMobileMenu();
     initializeHeaderScroll();
     initializeTouchNavigation();
-    loadProductDetails();
+    
+    // Initialize language
+    const currentLang = getCurrentLang();
+    updateLanguage(currentLang);
+    
+    // Add language switcher event listeners
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            updateLanguage(btn.dataset.lang);
+        });
+    });
 
     // Pencere boyutu değiştiğinde görüntüleri güncelle
     window.addEventListener('resize', () => {
