@@ -4,7 +4,3 @@
 .env.development
 .env.production
 .env*
-
-# JavaScript environment files
-js/env.js
-**/env.js 
