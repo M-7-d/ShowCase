@@ -1,6 +1,6 @@
 // Initialize Supabase client
-const supabaseUrl = 'https://uvrozprcewgwybuhguai.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cm96cHJjZXdnd3lidWhndWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NTI1MTAsImV4cCI6MjA1ODMyODUxMH0.2EgqTZjwcOv_kKP38g9nsou1ECsR_ybnAaGZduXWlaQ';
+const supabaseUrl = window.ENV.SUPABASE_URL;
+const supabaseKey = window.ENV.SUPABASE_ANON_KEY;
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     
 // Add this constant at the top of your script
@@ -181,18 +181,24 @@ async function addProduct(formData) {
     try {
         const imageFiles = formData.getAll('images');
         
-        if (!imageFiles || imageFiles.length === 0) {
-            throw new Error('Please select at least one image for the product.');
+        const validFiles = imageFiles.filter(file => {
+            if (file.size === 0) return false;
+            try {
+                validateImage(file);
+                return true;
+            } catch (error) {
+                console.warn('Invalid file:', error.message);
+                return false;
+            }
+        });
+        if (validFiles.length > 0) {
+            imageUrls = await uploadImages(validFiles);
         }
 
         // Show loading state
         const addButton = document.querySelector('#addProductBtn');
         addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
         addButton.disabled = true;
-
-        // Upload images first
-        const imageUrls = await uploadImages(imageFiles);
-        console.log('Uploaded URLs:', imageUrls); // Debug log
 
         // Create product with properly formatted image URLs array
         const { data, error } = await supabase
@@ -321,12 +327,17 @@ function addProductEventListeners() {
     });
 }
 
-// Event listener for add product form
-document.getElementById('addProductForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    addProduct(formData);
-});
+const addProductForm = document.getElementById('addProductForm');
+const addProductBtn = document.getElementById('addProductBtn');
+
+if (addProductForm && addProductBtn) {
+    // Remove any existing event listeners
+    addProductForm.removeEventListener('submit', handleAddProduct);
+    addProductBtn.removeEventListener('click', handleAddProduct);
+    
+    // Add new event listener to the button only
+    addProductBtn.addEventListener('click', handleAddProduct);
+}
 
 // Add filter event listeners
 document.getElementById('categoryFilter')?.addEventListener('change', (e) => {
@@ -607,4 +618,43 @@ function optimizeTableForMobile() {
 
 // Sayfa yüklendiğinde ve ekran boyutu değiştiğinde tabloyu optimize et
 window.addEventListener('load', optimizeTableForMobile);
-window.addEventListener('resize', optimizeTableForMobile); 
+window.addEventListener('resize', optimizeTableForMobile);
+
+document.getElementById('editProductImages')?.addEventListener('change', function(e) {
+    const files = e.target.files;
+    console.log('Selected files:', files); // Debug log
+    const previewContainer = document.querySelector('.edit-image-previews');
+    previewContainer.innerHTML = '';
+
+    if (files) {
+        Array.from(files).forEach(file => {
+            try {
+                validateImage(file);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'preview-item position-relative';
+                    previewDiv.style.width = '80px';
+                    previewDiv.style.height = '80px';
+                    
+                    previewDiv.innerHTML = `
+                        <img src="${e.target.result}" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+                             alt="Preview">
+                    `;
+                    
+                    previewContainer.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                showToast('Error', error.message, 'error');
+            }
+        });
+    }
+
+    const remainingImages = Array.from(document.querySelectorAll('.edit-image-previews img'))
+        .map(img => img.src)
+        .filter(url => url && url !== 'data:image/png;base64,...'); // Filter out placeholder images
+    const finalImageUrls = [...remainingImages, ...imageUrls];
+}); 

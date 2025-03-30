@@ -14,26 +14,41 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
+    <meta name="theme-color" content="#f8fafc">
 </head>
 
 <body>
     <!-- Header -->
     <header id="header">
         <nav class="container">
-            <a href="index.html" class="logo"><img src="img/logo.png" alt="STONES COMPANY"></a>
+            <a href="index.html" class="logo">
+                <img src="img/logo.png" alt="STONES COMPANY">
+            </a>
             <div class="links" id="links">
                 <span class="close_menu"><i class="fa-solid fa-xmark"></i></span>
-                <a href="index.html" class="logo mobile-logo"><img src="img/logo.png" alt="STONES COMPANY"></a>
-                <a href="index.html">Home</a>
-                <a href="index.html#services">Products</a>
-                <a href="index.html#products">Include</a>
-                <a href="admin.html">Admin</a>
+                <div class="mobile-logo">
+                    <a href="index.html" class="logo">
+                        <img src="img/logo.png" alt="STONES COMPANY">
+                    </a>
+                </div>
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#services" class="nav-link">Products</a>
+                <a href="index.html#products" class="nav-link">Include</a>
+                <a href="admin.html" class="nav-link">Admin</a>
             </div>
             <div class="icons">
-                <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="https://wa.me/+905301288498" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
-                <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-                <span id="menu-toggle" class="icon_menu"><i class="fa-solid fa-bars"></i></span>
+                <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank" class="social-icon">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </a>
+                <a href="https://wa.me/+905301288498" target="_blank" class="social-icon">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </a>
+                <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank" class="social-icon">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <span id="menu-toggle" class="icon_menu">
+                    <i class="fa-solid fa-bars"></i>
+                </span>
             </div>
         </nav>
     </header>
@@ -64,7 +79,7 @@
                                 <span class="meta-label">Product ID:</span>
                                 <span id="productId"></span>
                             </div>
-                            <div class="meta-item">
+                            <div class="meta-item">\
                                 <span class="meta-label">Category:</span>
                                 <span id="productCategoryMeta"></span>
                             </div>

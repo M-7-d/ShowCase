@@ -247,9 +247,9 @@ async function loadProducts(searchQuery = '') {
         </div>
     </div>
     <div class="product-info">
-        <span class="category"><font color="white">${product.category}</font></span>
-        <h3 class="product-title"><font color="white">${product.name}</font></h3>
-        <p class="product-description"><font color="white">${product.description}</font></p>
+        <span class="category"><font color="black">${product.category}</font></span>
+        <h3 class="product-title"><font color="black">${product.name}</font></h3>
+        <p class="product-description"><font color="black">${product.description}</font></p>
         <div class="product-actions">
             <a href="cart.html?id=${product.id}" class="details-btn">
                 <i class="fas fa-shopping-cart"></i> <font color="white">View Details</font>

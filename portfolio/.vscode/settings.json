@@ -1,0 +1,18 @@
+{
+    "liveServer.settings.CustomBrowser": "chrome",
+    "liveServer.settings.https": {
+        "enable": false,
+        "cert": "",
+        "key": "",
+        "passphrase": ""
+    },
+    "liveServer.settings.proxy": {
+        "enable": false,
+        "baseUri": "/",
+        "proxyUri": "http://localhost:3000"
+    },
+    "liveServer.settings.root": "/portfolio",
+    "liveServer.settings.mimeTypes": {
+        ".js": "application/javascript"
+    }
+} 

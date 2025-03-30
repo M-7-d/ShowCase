@@ -33,6 +33,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- First load Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Then load environment variables -->
+    <script>
+        // Inject environment variables
+        window.ENV = {
+            SUPABASE_URL: 'https://uvrozprcewgwybuhguai.supabase.co',
+            SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cm96cHJjZXdnd3lidWhndWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NTI1MTAsImV4cCI6MjA1ODMyODUxMH0.2EgqTZjwcOv_kKP38g9nsou1ECsR_ybnAaGZduXWlaQ',
+            ADMIN_USERNAME: 'İSAM ELHASAN',
+            ADMIN_PASSWORD: 'İSAM552882'
+        };
+    </script>
+    <script src="js/env.js"></script>
     <!-- Then load your config -->
     <script src="js/config.js"></script>
     <link rel="stylesheet" href="css/admin.css">
@@ -290,6 +301,23 @@
                         <div class="mb-4">
                             <label class="form-label">Description</label>
                             <textarea class="form-control" rows="4" name="description" required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Product Images</label>
+                            <div class="d-flex gap-3">
+                                <div class="flex-grow-1">
+                                    <input type="file" 
+                                           class="form-control" 
+                                           name="images" 
+                                           id="editProductImages"
+                                           accept="image/png, image/jpeg, image/jpg"
+                                           multiple>
+                                    <small class="text-muted">Accepted formats: JPG, JPEG, PNG. Max size: 5MB per image</small>
+                                </div>
+                                <div class="edit-image-previews d-flex gap-2" style="overflow-x: auto;">
+                                    <!-- Current images will be displayed here -->
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -694,18 +722,46 @@
                     return true;
                 }
 
-                async function updateProduct() {
+                // Make updateProduct globally available
+                window.updateProduct = async function() {
                     const form = document.getElementById('editProductForm');
                     const formData = new FormData(form);
                     const productId = formData.get('id');
 
                     try {
+                        // Show loading state
+                        const updateButton = document.querySelector('#editProductModal .btn-primary');
+                        updateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                        updateButton.disabled = true;
+
+                        // Get remaining images from the preview container
+                        const remainingImages = Array.from(document.querySelectorAll('.edit-image-previews .position-relative'))
+                            .map(container => container.dataset.imageUrl)
+                            .filter(url => url); // Filter out any undefined/null values
+
+                        // Handle new image uploads if any
+                        const imageFiles = formData.getAll('images');
+                        let newImageUrls = [];
+
+                        // Only process new images if there are any
+                        if (imageFiles && imageFiles.length > 0 && imageFiles[0].size > 0) {
+                            // Filter out empty files
+                            const validFiles = imageFiles.filter(file => file.size > 0);
+                            if (validFiles.length > 0) {
+                                newImageUrls = await uploadImages(validFiles);
+                            }
+                        }
+
+                        // Combine remaining existing images with new images
+                        const finalImageUrls = [...remainingImages, ...newImageUrls];
+
                         const { error } = await supabase
                             .from('products')
                             .update({
                                 name: formData.get('name'),
                                 category: formData.get('category'),
-                                description: formData.get('description')
+                                description: formData.get('description'),
+                                image_urls: finalImageUrls
                             })
                             .eq('id', productId);
 
@@ -719,14 +775,34 @@
 
                     } catch (error) {
                         console.error('Error updating product:', error);
-                        showToast('Error', 'Failed to update product', 'error');
+                        showToast('Error', error.message || 'Failed to update product', 'error');
+                    } finally {
+                        // Reset button state
+                        const updateButton = document.querySelector('#editProductModal .btn-primary');
+                        updateButton.innerHTML = 'Update Product';
+                        updateButton.disabled = false;
                     }
-                }
+                };
 
                 async function deleteProduct(id) {
                     if (!confirm('Are you sure you want to delete this product?')) return;
 
                     try {
+                        // Show loading state
+                        const deleteButton = event.target.closest('.delete-product');
+                        if (deleteButton) {
+                            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                            deleteButton.disabled = true;
+                        }
+
+                        // First get the product to check for images
+                        const { data: product } = await supabase
+                            .from('products')
+                            .select('image_urls')
+                            .eq('id', id)
+                            .single();
+
+                        // Delete the product
                         const { error } = await supabase
                             .from('products')
                             .delete()
@@ -739,16 +815,27 @@
 
                     } catch (error) {
                         console.error('Error deleting product:', error);
-                        showToast('Error', 'Failed to delete product', 'error');
+                        showToast('Error', error.message || 'Failed to delete product', 'error');
+                    } finally {
+                        // Reset button state if it exists
+                        const deleteButton = event.target.closest('.delete-product');
+                        if (deleteButton) {
+                            deleteButton.innerHTML = '<i class="fas fa-trash me-2"></i>Delete';
+                            deleteButton.disabled = false;
+                        }
                     }
                 }
 
                 function addProductEventListeners() {
+                    // Edit product listeners
                     document.querySelectorAll('.edit-product').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             e.preventDefault();
                             const product = JSON.parse(e.target.closest('.edit-product').dataset.product);
                             const form = document.getElementById('editProductForm');
+                            
+                            // Store original image URLs in a data attribute
+                            form.dataset.originalImages = JSON.stringify(product.image_urls || []);
                             
                             // Form alanlarını doldur
                             form.querySelector('[name="id"]').value = product.id;
@@ -756,18 +843,49 @@
                             form.querySelector('[name="category"]').value = product.category;
                             form.querySelector('[name="description"]').value = product.description;
 
+                            // Display current images
+                            const imagePreviews = document.querySelector('.edit-image-previews');
+                            imagePreviews.innerHTML = '';
+                            
+                            if (product.image_urls && product.image_urls.length > 0) {
+                                product.image_urls.forEach(url => {
+                                    const imgContainer = document.createElement('div');
+                                    imgContainer.className = 'position-relative';
+                                    imgContainer.dataset.imageUrl = url; // Store the URL in data attribute
+                                    imgContainer.innerHTML = `
+                                        <img src="${url}" alt="Product" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;">
+                                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-image">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    `;
+                                    imagePreviews.appendChild(imgContainer);
+                                });
+                            }
+
+                            // Add event listeners for image removal
+                            imagePreviews.querySelectorAll('.remove-image').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    this.closest('.position-relative').remove();
+                                });
+                            });
+
                             // Modal'ı göster
                             const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
                             modal.show();
                         });
                     });
 
+                    // Delete product listeners
                     document.querySelectorAll('.delete-product').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             e.preventDefault();
                             const row = e.target.closest('tr');
-                            const productId = row.dataset.productId;
-                            deleteProduct(productId);
+                            if (row) {
+                                const productId = row.dataset.productId;
+                                if (productId) {
+                                    deleteProduct(productId);
+                                }
+                            }
                         });
                     });
                 }
@@ -797,8 +915,6 @@
                         timeout = setTimeout(later, wait);
                     };
                 }
-
-                document.querySelector('#editProductModal .btn-primary').addEventListener('click', updateProduct);
             } catch (error) {
                 console.error('Failed to initialize:', error);
                 showToast('Error', 'Failed to initialize application', 'error');

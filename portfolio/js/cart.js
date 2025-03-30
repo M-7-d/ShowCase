@@ -147,7 +147,7 @@ function navigateImages(direction) {
 function updateWhatsAppButton(data) {
     const whatsappBtn = document.getElementById('whatsappBtn');
     const message = encodeURIComponent(`Hi, I'm interested in ${data.name} (${data.category}). Can you provide more information?`);
-    whatsappBtn.href = `https://wa.me/20123456789?text=${message}`;
+    whatsappBtn.href = `https://wa.me/905301288498?text=${message}`;
 }
 
 // Mobile menu functionality
