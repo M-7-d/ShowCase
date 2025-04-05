@@ -8,7 +8,7 @@ const DEFAULT_IMAGE = 'img/project1.jpg';
 
 // Global variables for pagination
 let currentPage = 1;
-const productsPerPage = 9;
+let productsPerPage = 9;
 let allProducts = [];
 
 // Function to update all translatable elements
@@ -28,6 +28,12 @@ function updateTranslations() {
 
 // Function to update language
 function updateLanguage(lang) {
+    // Validate language code
+    if (!lang || (lang !== 'en' && lang !== 'ar' && lang !== 'tr')) {
+        console.warn(`Invalid language code: ${lang}, defaulting to English`);
+        lang = 'en';
+    }
+    
     setCurrentLang(lang);
     
     // Update language buttons
@@ -53,10 +59,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentLang = getCurrentLang();
     updateLanguage(currentLang);
     
+    // Update the dropdown button text
+    const langBtn = document.querySelector('.lang-btn');
+    if (langBtn) {
+        const langText = currentLang === 'en' ? 'English' : 
+                        currentLang === 'ar' ? 'عربي' : 
+                        currentLang === 'tr' ? 'Türkçe' : 'English';
+        const langSpan = langBtn.querySelector('span');
+        if (langSpan) {
+            langSpan.textContent = langText;
+        }
+        
+        // Ensure dropdown items are centered
+        const dropdownItems = document.querySelectorAll('.language-switcher .dropdown-item');
+        dropdownItems.forEach(item => {
+            item.style.justifyContent = 'center';
+            item.style.textAlign = 'center';
+        });
+    }
+    
     // Add language switcher event listeners
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            updateLanguage(btn.dataset.lang);
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const lang = item.dataset.lang;
+            if (lang && (lang === 'en' || lang === 'ar' || lang === 'tr')) {
+                updateLanguage(lang);
+                
+                // Update dropdown button text
+                const langBtn = document.querySelector('.lang-btn');
+                if (langBtn) {
+                    const langText = lang === 'en' ? 'English' : 
+                                   lang === 'ar' ? 'عربي' : 
+                                   lang === 'tr' ? 'Türkçe' : 'English';
+                    const langSpan = langBtn.querySelector('span');
+                    if (langSpan) {
+                        langSpan.textContent = langText;
+                    }
+                }
+            }
         });
     });
 
@@ -75,6 +116,29 @@ document.addEventListener('DOMContentLoaded', () => {
         adminLink.addEventListener('click', function(e) {
             e.preventDefault();
             window.location.href = 'admin.html#login';
+        });
+    }
+    
+    // Ensure mobile menu is properly initialized
+    const menuToggle = document.getElementById('menu-toggle');
+    const navLinks = document.getElementById('links');
+    
+    if (menuToggle && navLinks) {
+        // Add touch event for better mobile experience
+        menuToggle.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            navLinks.classList.toggle('active');
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        });
+        
+        // Ensure menu closes when clicking outside
+        document.addEventListener('click', function(e) {
+            if (navLinks.classList.contains('active') && 
+                !navLinks.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                navLinks.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         });
     }
 });
@@ -340,14 +404,16 @@ function handleResponsive() {
 
     // Mobile menu functionality with improved animations
     if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling up
             navLinks.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
         });
     }
 
     if (closeMenu) {
-        closeMenu.addEventListener('click', () => {
+        closeMenu.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling up
             navLinks.classList.remove('active');
             document.body.style.overflow = ''; // Restore scrolling
         });
@@ -400,6 +466,14 @@ function handleResponsive() {
             updateProductGrid();
         }, 250);
     });
+    
+    // Fix for mobile menu toggle button
+    if (menuToggle) {
+        menuToggle.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent default touch behavior
+            menuToggle.click(); // Trigger the click event
+        });
+    }
 }
 
 // Update product grid layout based on screen size

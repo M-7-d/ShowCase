@@ -28,15 +28,36 @@
                 <a href="admin.html" data-translate="admin">Admin</a>      
             </div>
             <div class="icons">
-                <div class="language-switcher">
-                    <button class="lang-btn" data-lang="en">EN</button>
-                    <button class="lang-btn" data-lang="ar">عربي</button>
-                    <button class="lang-btn" data-lang="tr">TR</button>
+                <div class="language-switcher dropdown">
+                    <button class="lang-btn dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-globe"></i>
+                        <span>EN</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#" data-lang="en">
+                                <i class="fas fa-globe"></i>
+                                <span>English</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-lang="ar">
+                                <i class="fas fa-globe"></i>
+                                <span>عربي</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-lang="tr">
+                                <i class="fas fa-globe"></i>
+                                <span>Türkçe</span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
                 <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
                 <a href="https://wa.me/+905301288498" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
                 <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-                <span id="menu-toggle" class="icon_menu"><i class="fa-solid fa-bars"></i></span>
+                <button id="menu-toggle" class="icon_menu" aria-label="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
             </div>
         </nav>
     </header>

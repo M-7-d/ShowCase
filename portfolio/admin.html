@@ -38,28 +38,65 @@
         // Inject environment variables
         window.ENV = {
             SUPABASE_URL: 'https://uvrozprcewgwybuhguai.supabase.co',
-            SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cm96cHJjZXdnd3lidWhndWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NTI1MTAsImV4cCI6MjA1ODMyODUxMH0.2EgqTZjwcOv_kKP38g9nsou1ECsR_ybnAaGZduXWlaQ',
-            ADMIN_USERNAME: 'İSAM ELHASAN',
-            ADMIN_PASSWORD: 'İSAM552882'
+            SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cm96cHJjZXdnd3lidWhndWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NTI1MTAsImV4cCI6MjA1ODMyODUxMH0.2EgqTZjwcOv_kKP38g9nsou1ECsR_ybnAaGZduXWlaQ'
         };
     </script>
+    <!-- Then load your env.js which initializes Supabase -->
     <script src="js/env.js"></script>
     <!-- Then load your config -->
     <script src="js/config.js"></script>
+    <!-- Finally load your admin.js -->
+    <script src="js/admin.js"></script>
     <link rel="stylesheet" href="css/admin.css">
 </head>
 
 <body>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hash kontrolü yapılıyor
-            if (window.location.hash === '#login' || !localStorage.getItem('adminAuthenticated')) {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize Supabase client if not already initialized
+            if (!window.supabaseClient && window.supabase) {
+                const supabaseUrl = window.ENV.SUPABASE_URL;
+                const supabaseKey = window.ENV.SUPABASE_ANON_KEY;
+                window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            }
+            
+            // Check if user is authenticated with Supabase
+            if (window.supabaseClient) {
+                const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+                
+                if (window.location.hash === '#login' || !session) {
+                    document.getElementById('login-screen').classList.remove('d-none');
+                    document.getElementById('admin-dashboard').classList.add('d-none');
+                } else {
+                    document.getElementById('login-screen').classList.add('d-none');
+                    document.getElementById('admin-dashboard').classList.remove('d-none');
+                    loadProducts(); // If this function is defined
+                    
+                    // Add direct event listener to search input
+                    const searchInput = document.getElementById('searchProducts');
+                    if (searchInput) {
+                        console.log('Adding direct event listener to search input');
+                        searchInput.addEventListener('input', function(e) {
+                            console.log('Search input changed (direct):', e.target.value);
+                            loadProducts({ search: e.target.value });
+                        });
+                        
+                        // Add direct event listener to search button
+                        const searchButton = document.querySelector('.input-group .btn-outline-primary');
+                        if (searchButton) {
+                            console.log('Adding direct event listener to search button');
+                            searchButton.addEventListener('click', function() {
+                                console.log('Search button clicked (direct)');
+                                const searchValue = searchInput.value;
+                                loadProducts({ search: searchValue });
+                            });
+                        }
+                    }
+                }
+            } else {
+                console.error('Supabase client not initialized');
                 document.getElementById('login-screen').classList.remove('d-none');
                 document.getElementById('admin-dashboard').classList.add('d-none');
-            } else {
-                document.getElementById('login-screen').classList.add('d-none');
-                document.getElementById('admin-dashboard').classList.remove('d-none');
-                loadProducts(); // Eğer bu fonksiyon tanımlıysa
             }
         });
     </script>
@@ -75,12 +112,12 @@
             <p class="text-center text-muted mb-4">Enter your credentials to access the products panel</p>
             <form id="loginForm">
                 <div class="mb-4">
-                    <label for="username" class="form-label">Username</label>
+                    <label for="email" class="form-label">Email</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0">
-                            <i class="fas fa-user text-muted"></i>
+                            <i class="fas fa-envelope text-muted"></i>
                         </span>
-                        <input type="text" class="form-control border-start-0" id="username" placeholder="Enter username" required>
+                        <input type="email" class="form-control border-start-0" id="email" placeholder="Enter your email" required>
                     </div>
                 </div>
                 <div class="mb-4">
@@ -118,13 +155,13 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
                                 <div class="position-relative">
-                                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=1e40af&color=fff" alt="Admin" class="rounded-circle" width="50" height="50" style="object-fit: cover; border: 3px solid white;">
+                                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=Admin+User&background=1e40af&color=fff" alt="Admin" class="rounded-circle" width="50" height="50" style="object-fit: cover; border: 3px solid white;">
                                     <span class="position-absolute bottom-0 end-0 bg-success rounded-circle p-1" style="width: 14px; height: 14px; border: 2px solid white;"></span>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-0 text-white">Admin User</h6>
-                                <small class="text-white-50">Administrator</small>
+                                <h6 class="mb-0 text-white" id="userName">Admin User</h6>
+                                <small class="text-white-50" id="userRole">Administrator</small>
                             </div>
                         </div>
                     </div>
@@ -218,9 +255,8 @@
     <div class="modal fade" 
          id="addProductModal" 
          tabindex="-1" 
-         role="dialog"
          aria-labelledby="addProductModalLabel">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
@@ -276,11 +312,11 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Product</h5>
+                    <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -330,11 +366,11 @@
     </div>
 
     <!-- Add this modal for viewing all images -->
-    <div class="modal fade" id="viewImagesModal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="viewImagesModal" tabindex="-1" aria-labelledby="viewImagesModalLabel">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Product Images</h5>
+                    <h5 class="modal-title" id="viewImagesModalLabel">Product Images</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -385,29 +421,23 @@
 
                 checkAuth();
 
-                document.getElementById('loginForm').addEventListener('submit', function (e) {
+                document.getElementById('logoutBtn').addEventListener('click', async function (e) {
                     e.preventDefault();
-                    const username = document.getElementById('username').value;
-                    const password = document.getElementById('password').value;
-
-                    // Use window.ENV directly
-                    if (username === window.ENV.ADMIN_USERNAME && password === window.ENV.ADMIN_PASSWORD) {
-                        localStorage.setItem('adminAuthenticated', 'true');
-                        document.getElementById('login-screen').classList.add('d-none');
-                        document.getElementById('admin-dashboard').classList.remove('d-none');
-                        showToast('Success', 'Login successful. Welcome to the products panel!');
-                        loadProducts();
-                    } else {
-                        showToast('Error', 'Invalid credentials. Please try again.', 'error');
+                    
+                    try {
+                        const result = await window.supabaseClient.auth.signOut();
+                        
+                        if (result.error) {
+                            throw result.error;
+                        }
+                        
+                        document.getElementById('login-screen').classList.remove('d-none');
+                        document.getElementById('admin-dashboard').classList.add('d-none');
+                        showToast('Success', 'You have been logged out successfully.');
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        showToast('Error', 'An error occurred during logout. Please try again.', 'error');
                     }
-                });
-
-                document.getElementById('logoutBtn').addEventListener('click', function (e) {
-                    e.preventDefault();
-                    localStorage.removeItem('adminAuthenticated');
-                    document.getElementById('login-screen').classList.remove('d-none');
-                    document.getElementById('admin-dashboard').classList.add('d-none');
-                    showToast('Success', 'You have been logged out successfully.');
                 });
 
                 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -894,27 +924,11 @@
                     loadProducts({ category: e.target.value });
                 });
 
-                document.getElementById('searchProducts')?.addEventListener('input', debounce((e) => {
-                    loadProducts({ search: e.target.value });
-                }, 300));
-
                 document.getElementById('resetFilters')?.addEventListener('click', () => {
                     document.getElementById('categoryFilter').value = '';
                     document.getElementById('searchProducts').value = '';
                     loadProducts();
                 });
-
-                function debounce(func, wait) {
-                    let timeout;
-                    return function executedFunction(...args) {
-                        const later = () => {
-                            clearTimeout(timeout);
-                            func(...args);
-                        };
-                        clearTimeout(timeout);
-                        timeout = setTimeout(later, wait);
-                    };
-                }
             } catch (error) {
                 console.error('Failed to initialize:', error);
                 showToast('Error', 'Failed to initialize application', 'error');

@@ -238,7 +238,9 @@ const translations = {
 
 // Language management functions
 function getCurrentLang() {
-    return localStorage.getItem('language') || 'en';
+    const lang = localStorage.getItem('language');
+    // Ensure we always return a valid language code
+    return (lang && (lang === 'en' || lang === 'ar' || lang === 'tr')) ? lang : 'en';
 }
 
 function setCurrentLang(lang) {
@@ -248,8 +250,15 @@ function setCurrentLang(lang) {
 }
 
 function getTranslation(key) {
-    const lang = getCurrentLang();
-    return translations[lang][key] || translations['en'][key] || key;
+    const currentLang = getCurrentLang();
+    const langTranslations = translations[currentLang];
+    
+    if (!langTranslations) {
+        console.warn(`Language ${currentLang} not found, falling back to English`);
+        return translations.en[key] || key;
+    }
+    
+    return langTranslations[key] || translations.en[key] || key;
 }
 
 // Export for use in other files
