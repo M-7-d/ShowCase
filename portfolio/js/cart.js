@@ -194,16 +194,73 @@ function initializeMobileMenu() {
     const menuToggle = document.getElementById('menu-toggle');
     const links = document.getElementById('links');
     const closeMenu = document.querySelector('.close_menu');
+    const body = document.body;
     
-    menuToggle?.addEventListener('click', () => links.classList.add('active'));
-    closeMenu?.addEventListener('click', () => links.classList.remove('active'));
+    // Toggle menu
+    menuToggle?.addEventListener('click', () => {
+        links.classList.add('active');
+        body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+    });
+    
+    // Close menu
+    closeMenu?.addEventListener('click', () => {
+        links.classList.remove('active');
+        body.style.overflow = ''; // Restore scrolling
+    });
+    
+    // Close menu when clicking on a link
+    const navLinks = links.querySelectorAll('a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            links.classList.remove('active');
+            body.style.overflow = ''; // Restore scrolling
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (links.classList.contains('active') && 
+            !links.contains(e.target) && 
+            e.target !== menuToggle) {
+            links.classList.remove('active');
+            body.style.overflow = ''; // Restore scrolling
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768 && links.classList.contains('active')) {
+            links.classList.remove('active');
+            body.style.overflow = ''; // Restore scrolling
+        }
+    });
 }
 
 // Header scroll effect
 function initializeHeaderScroll() {
+    const header = document.getElementById('header');
+    let lastScrollTop = 0;
+    
     window.addEventListener('scroll', () => {
-        const header = document.getElementById('header');
-        header.classList.toggle('scrolled', window.scrollY > 50);
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Add scrolled class when scrolling down
+        if (scrollTop > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+        
+        // Hide/show header based on scroll direction
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Scrolling down
+            header.style.transform = 'translateY(-100%)';
+        } else {
+            // Scrolling up
+            header.style.transform = 'translateY(0)';
+        }
+        
+        lastScrollTop = scrollTop;
     });
 }
 

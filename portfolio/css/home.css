@@ -4,8 +4,8 @@
     --primary-color-light: #22c55e;
     --secondary-color: #2563eb;
     --secondary-color-dark: #1d4ed8;
-    --dark: #f8fafc;
-    --dark-light: #f1f5f9;
+    --dark: #e5e7eb;
+    --dark-light: #f3f4f6;
     --gray: #64748b;
     --gray-light: #94a3b8;
     --white: #ffffff;
@@ -13,7 +13,7 @@
 }
 
 body {
-    background: linear-gradient(to bottom, var(--dark), var(--dark-light));
+    background: var(--dark);
     color: #1e293b;
     font-family: 'Inter', sans-serif;
     line-height: 1.7;
@@ -111,7 +111,7 @@ header nav .icons a:hover {
     min-height: 100vh;
     display: flex;
     align-items: center;
-    background: linear-gradient(to bottom, var(--dark), var(--dark-light));
+    background: var(--dark);
     position: relative;
     overflow: hidden;
 }
@@ -466,7 +466,7 @@ header nav .icons a:hover {
 /* Featured Products Section - Enhanced */
 .featured-products {
     padding: 100px 0;
-    background: linear-gradient(to bottom, rgba(22, 163, 74, 0.05), rgba(37, 99, 235, 0.05));
+    background: var(--dark-light);
     position: relative;
     z-index: 1;
 }
@@ -827,7 +827,7 @@ header nav .icons a:hover {
 /* Why Choose Us Section - Enhanced */
 .why-choose-us {
     padding: 100px 0;
-    background: linear-gradient(to bottom, rgba(22, 163, 74, 0.05), rgba(37, 99, 235, 0.05));
+    background: var(--dark);
     position: relative;
 }
 
@@ -933,7 +933,7 @@ header nav .icons a:hover {
 
 /* Footer - Enhanced */
 footer {
-    background: var(--dark);
+    background: var(--dark-light);
     padding: 30px 0;
     text-align: center;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
