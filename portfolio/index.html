@@ -3,7 +3,7 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>STONES COMPANY</title>
     <link rel="icon" href="img/logo_icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -11,8 +11,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/home.css">
-    <!-- Translations -->
-    <script src="js/translations.js"></script>
+    <!-- Google Translate API -->
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
     <!-- Header -->
@@ -22,41 +22,47 @@
             <div class="links" id="links">
                 <span class="close_menu"><i class="fa-solid fa-xmark"></i></span>
                 <a href="#" class="logo mobile-logo"><img src="img/logo.png" alt="STONES COMPANY"></a>
-                <a class="active" href="#" data-translate="home">Home</a>
-                <a href="#services" data-translate="products">Products</a>
-                <a href="#products" data-translate="include">Include</a>
-                <a href="admin.html" data-translate="admin">Admin</a>      
+                <a class="active" href="#">Home</a>
+                <a href="#services">Products</a>
+                <a href="#footer">Contact</a>
+                <a href="admin.html">Admin</a>
+                <!-- Mobile language dropdown -->
+                <div class="language-dropdown mobile-language">
+                    <button class="dropdown-btn mobile-dropdown-btn" id="mobile-language-toggle">
+                        <i class="fas fa-globe-americas"></i> <span id="mobile-current-language">EN</span> <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu mobile-dropdown-menu" id="mobile-language-dropdown-menu">
+                        <a href="#" onclick="applyLanguage('en'); return false;" class="dropdown-item" data-lang="en">
+                            <span style="color: white !important;">English</span>
+                        </a>
+                        <a href="#" onclick="applyLanguage('tr'); return false;" class="dropdown-item" data-lang="tr">
+                            <span style="color: white !important;">Türkçe</span>
+                        </a>
+                        <a href="#" onclick="applyLanguage('ar'); return false;" class="dropdown-item" data-lang="ar">
+                            <span style="color: white !important;">العربية</span>
+                        </a>
+                    </div>
+                </div>        
             </div>
             <div class="icons">
-                <div class="language-switcher dropdown">
-                    <button class="lang-btn dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-globe"></i>
-                        <span>EN</span>
+                <!-- Desktop language dropdown (hidden on mobile) -->
+                <div class="language-dropdown desktop-language">
+                    <button class="dropdown-btn" id="language-toggle">
+                        <i class="fas fa-globe-americas"></i> <span id="current-language">EN</span> <i class="fas fa-chevron-down"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                        <li>
-                            <a class="dropdown-item" href="#" data-lang="en">
-                                <i class="fas fa-globe"></i>
-                                <span>English</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="#" data-lang="ar">
-                                <i class="fas fa-globe"></i>
-                                <span>عربي</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="#" data-lang="tr">
-                                <i class="fas fa-globe"></i>
-                                <span>Türkçe</span>
-                            </a>
-                        </li>
-                    </ul>
+                    <div class="dropdown-menu" id="language-dropdown-menu">
+                        <a href="#" onclick="changeLanguage('en'); return false;" class="dropdown-item">
+                            <span>English</span>
+                        </a>
+                        <a href="#" onclick="changeLanguage('tr'); return false;" class="dropdown-item">
+                            <span>Türkçe</span>
+                        </a>
+                        <a href="#" onclick="changeLanguage('ar'); return false;" class="dropdown-item">
+                            <span>العربية</span>
+                        </a>
+                    </div>
                 </div>
-                <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="https://wa.me/+905301288498" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
-                <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                <div id="google_translate_element" style="display: none;"></div>
                 <button id="menu-toggle" class="icon_menu" aria-label="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
             </div>
         </nav>
@@ -66,11 +72,11 @@
     <div class="hero">
         <div class="container">
             <div class="div_Text">
-                <h4 data-translate="welcome">Welcome to</h4>
+                <h4>Welcome to</h4>
                 <h1><span>STONES.</span></h1>
-                <p data-translate="heroText">📣 We proudly offer the finest PVC and aluminum parts and accessories! Whether you're looking for high quality, we're here to provide everything you need.</p>
+                <p>📣 We proudly offer the finest PVC and aluminum parts and accessories! Whether you're looking for high quality, we're here to provide everything you need.</p>
                 <div class="btns">
-                    <a href="#services" class="btn primary-btn" data-translate="ourProducts">Our Products</a>
+                    <a href="#services" class="btn primary-btn">Our Products</a>
                 </div>
             </div>
             <div class="div_design">
@@ -86,8 +92,8 @@
     <section class="featured-products" id="services">
         <div class="container">
             <div class="top_section">
-                <h2 data-translate="featuredProducts">Our Featured Products</h2>
-                <p data-translate="exploreProducts">Explore our high-quality selection of PVC and aluminum parts</p>
+                <h2>Our Featured Products</h2>
+                <p>Explore our high-quality selection of PVC and aluminum parts</p>
                 <!-- Add search bar -->
                 <div class="search-container mt-4">
                     <div class="input-group mx-auto" style="max-width: 500px;">
@@ -97,8 +103,9 @@
                         <input type="text" 
                                id="searchProducts" 
                                class="form-control border-start-0" 
-                               data-translate-placeholder="searchProducts"
-                               style="background: rgba(255, 255, 255, 0.1); color: white;">
+                               placeholder="Search products..."
+                               style="background: rgba(255, 255, 255, 0.1);"
+                               autocomplete="off">
                     </div>
                 </div>
             </div>
@@ -106,7 +113,7 @@
                 <!-- Product cards will be loaded dynamically -->
                 <div class="loading-state">
                     <div class="spinner"></div>
-                    <p data-translate="loading">Loading products...</p>
+                    <p>Loading products...</p>
                 </div>
             </div>
             <div class="pagination" id="pagination">
@@ -119,29 +126,29 @@
     <section class="projects" id="products">
         <div class="container">
             <div class="top_section">
-                <h2 data-translate="productsInclude">Our products include:</h2>
+                <h2>Our products include:</h2>
             </div>
             <div class="project_box">
-                <img src="img/project1.jpg" alt="PVC Parts">
+                <img src="img/project1.jpg" alt="PVC Parts" loading="lazy">
                 <div class="text">
-                    <h4><span data-translate="products">Products</span></h4>
-                    <h3><a href="#" data-translate="highQualityPVC">High-quality PVC parts</a></h3>
+                    <h4><span>Products</span></h4>
+                    <h3><a href="#">High-quality PVC parts</a></h3>
                     <a href="#" class="link"><i class="fa-solid fa-arrow-up"></i></a>
                 </div>
             </div>
             <div class="project_box project_box_2">
-                <img src="img/project2.jpg" alt="Aluminum Parts">
+                <img src="img/project2.jpg" alt="Aluminum Parts" loading="lazy">
                 <div class="text">
-                    <h4><span data-translate="products">Products</span></h4>
-                    <h3><a href="#" data-translate="durableAluminum">Durable aluminum parts</a></h3>
+                    <h4><span>Products</span></h4>
+                    <h3><a href="#">Durable aluminum parts</a></h3>
                     <a href="#" class="link"><i class="fa-solid fa-arrow-up"></i></a>
                 </div>
             </div>
             <div class="project_box">
-                <img src="img/project3.jpg" alt="Accessories">
+                <img src="img/project3.jpg" alt="Accessories" loading="lazy">
                 <div class="text">
-                    <h4><span data-translate="products">Products</span></h4>
-                    <h3><a href="#" data-translate="accessories">A wide range of accessories</a></h3>
+                    <h4><span>Products</span></h4>
+                    <h3><a href="#">A wide range of accessories</a></h3>
                     <a href="#" class="link"><i class="fa-solid fa-arrow-up"></i></a>
                 </div>
             </div>
@@ -152,41 +159,241 @@
     <section class="why-choose-us">
         <div class="container">
             <div class="top_section">
-                <h1 data-translate="whyChooseUs">Why choose Stones?</h1>
+                <h1>Why choose Stones?</h1>
             </div>
             <div class="features">
                 <div class="feature-card">
                     <div class="icon-wrapper"><i class="fa-solid fa-medal"></i></div>
-                    <h2><a href="#" data-translate="quality">Unparalleled quality</a></h2>
-                    <p data-translate="qualityDesc">Our products undergo rigorous quality control to ensure they meet the highest standards.</p>
+                    <h2><a href="#">Unparalleled quality</a></h2>
+                    <p>Our products undergo rigorous quality control to ensure they meet the highest standards.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon-wrapper"><i class="fa-solid fa-tags"></i></div>
-                    <h2><a href="#" data-translate="prices">Competitive prices</a></h2>
-                    <p data-translate="pricesDesc">We offer the best value for your investment without compromising on quality.</p>
+                    <h2><a href="#">Competitive prices</a></h2>
+                    <p>We offer the best value for your investment without compromising on quality.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon-wrapper"><i class="fa-solid fa-headset"></i></div>
-                    <h2><a href="#" data-translate="service">Excellent customer service</a></h2>
-                    <p data-translate="serviceDesc">Our dedicated team is always ready to assist you with any inquiries or support needs.</p>
+                    <h2><a href="#">Excellent customer service</a></h2>
+                    <p>Our dedicated team is always ready to assist you with any inquiries or support needs.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer id="footer">
         <div class="container">
-            <p>© <span id="current-year"></span> STONES COMPANY. <span data-translate="copyright">All Rights Reserved.</span></p>
+            <div class="footer-content">
+                <div class="footer-social">
+                    <a href="https://www.facebook.com/share/1FgkkTihxv/" target="_blank" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="https://wa.me/+905301288498" target="_blank" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="https://www.instagram.com/stones_upvc?utm_source=qr&igsh=MXhoNnk3NHE4aTVlbQ==" target="_blank" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+                <p>© <span id="current-year"></span> STONES COMPANY. All Rights Reserved.</p>
+            </div>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/translator.js"></script>
     <script>
+        // Ensure Google Translate API is properly loaded
+        function ensureGoogleTranslateScriptLoaded() {
+            if (typeof google === 'undefined' || !google.translate) {
+                console.log('Google Translate not loaded yet, loading script...');
+                const script = document.createElement('script');
+                script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+                return false;
+            }
+            return true;
+        }
+        
+        // Check if Google Translate is loaded and initialize if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (!document.querySelector('.goog-te-combo')) {
+                    console.log("Google Translate not initialized, retrying...");
+                    if (ensureGoogleTranslateScriptLoaded() && typeof googleTranslateElementInit === 'function') {
+                        googleTranslateElementInit();
+                    }
+                }
+            }, 1000);
+        });
+        
         // Set current year in footer
         document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Ensure proper viewport height on mobile
+        function setMobileHeight() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        setMobileHeight();
+        window.addEventListener('resize', setMobileHeight);
+
+        // Direct language change function
+        function changeLanguage(langCode) {
+            console.log("Dil değiştirme isteği:", langCode);
+            // Check if applyLanguage function is available (from translator.js)
+            if (typeof applyLanguage === 'function') {
+                applyLanguage(langCode);
+            } else {
+                // Fallback to original method
+                const selectElement = document.querySelector('.goog-te-combo');
+                
+                if (selectElement) {
+                    // Set the value to the desired language
+                    selectElement.value = langCode;
+                    
+                    // Trigger events for better compatibility
+                    selectElement.dispatchEvent(new Event('change'));
+                    selectElement.dispatchEvent(new Event('click'));
+                    
+                    // Manually trigger Google's translation function if available
+                    if (typeof selectElement.onchange === 'function') {
+                        selectElement.onchange();
+                    }
+                    
+                    // Update the current language display
+                    const currentLang = document.getElementById('current-language');
+                    if (currentLang) {
+                        switch(langCode) {
+                            case 'ar': currentLang.textContent = 'AR'; break;
+                            case 'tr': currentLang.textContent = 'TR'; break;
+                            default: currentLang.textContent = 'EN';
+                        }
+                    }
+                    
+                    // Close the dropdown
+                    document.getElementById('language-dropdown-menu').classList.remove('show');
+                    
+                    // Store selected language in localStorage for persistence
+                    localStorage.setItem('selectedLanguage', langCode);
+                } else {
+                    console.error("Google Translate dropdown not found. Retrying in 1 second...");
+                    // If the Google Translate element is not yet loaded, retry after a delay
+                    setTimeout(() => changeLanguage(langCode), 1000);
+                }
+            }
+            
+            // Always close the dropdown menu
+            document.getElementById('language-dropdown-menu').classList.remove('show');
+        }
+
+        // Google Translate Initialization
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,ar,tr',
+                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+        
+        // Language dropdown toggle for desktop
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageToggle = document.getElementById('language-toggle');
+            const dropdownMenu = document.getElementById('language-dropdown-menu');
+            const mobileLanguageToggle = document.getElementById('mobile-language-toggle');
+            const mobileDropdownMenu = document.getElementById('mobile-language-dropdown-menu');
+            
+            // Desktop language toggle
+            if (languageToggle && dropdownMenu) {
+                languageToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!languageToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Mobile language toggle
+            if (mobileLanguageToggle && mobileDropdownMenu) {
+                mobileLanguageToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Mobile language toggle clicked');
+                    mobileDropdownMenu.classList.toggle('show');
+                });
+                
+                // Close mobile dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!mobileLanguageToggle.contains(e.target) && !mobileDropdownMenu.contains(e.target)) {
+                        mobileDropdownMenu.classList.remove('show');
+                    }
+                });
+                
+                // Make mobile dropdown language items work properly with direct calls
+                const mobileDropdownItems = mobileDropdownMenu.querySelectorAll('.dropdown-item');
+                mobileDropdownItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const langCode = this.getAttribute('data-lang');
+                        console.log('Mobile language item clicked:', langCode);
+                        
+                        if (typeof window.applyLanguage === 'function') {
+                            window.applyLanguage(langCode);
+                        } else if (typeof applyLanguage === 'function') {
+                            applyLanguage(langCode);
+                        } else {
+                            // Fallback to original method
+                            changeLanguage(langCode);
+                        }
+                        
+                        mobileDropdownMenu.classList.remove('show');
+                        return false;
+                    });
+                });
+            }
+            
+            // Sync language display between mobile and desktop
+            const syncLanguageDisplay = function(langCode) {
+                const currentLang = document.getElementById('current-language');
+                const mobileCurrentLang = document.getElementById('mobile-current-language');
+                let displayText = 'EN';
+                
+                switch(langCode) {
+                    case 'ar': displayText = 'AR'; break;
+                    case 'tr': displayText = 'TR'; break;
+                    default: displayText = 'EN';
+                }
+                
+                if (currentLang) currentLang.textContent = displayText;
+                if (mobileCurrentLang) mobileCurrentLang.textContent = displayText;
+            };
+            
+            // Apply saved language
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                syncLanguageDisplay(savedLanguage);
+            }
+            
+            // Override changeLanguage function to update both displays
+            window.originalChangeLanguage = window.changeLanguage;
+            window.changeLanguage = function(langCode) {
+                if (window.originalChangeLanguage) {
+                    window.originalChangeLanguage(langCode);
+                }
+                
+                syncLanguageDisplay(langCode);
+                
+                // Close both dropdowns
+                if (dropdownMenu) dropdownMenu.classList.remove('show');
+                if (mobileDropdownMenu) mobileDropdownMenu.classList.remove('show');
+            };
+        });
     </script>
 </body>
 </html>

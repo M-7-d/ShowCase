@@ -83,13 +83,11 @@ async function loadProductDetails() {
 
 // Update UI with product data
 function updateProductUI(data) {
-    const isRTL = getCurrentLang() === 'ar';
-    
-    // Update product information with translations
-    updateElement('productName', isRTL ? data.name_ar || data.name : data.name);
-    updateElement('productCategory', isRTL ? data.category_ar || data.category : data.category);
-    updateElement('productCategoryMeta', isRTL ? data.category_ar || data.category : data.category);
-    updateElement('productDescription', isRTL ? data.description_ar || data.description : data.description);
+    // Update product information
+    updateElement('productName', data.name);
+    updateElement('productCategory', data.category);
+    updateElement('productCategoryMeta', data.category);
+    updateElement('productDescription', data.description);
     updateElement('productId', data.id);
     
     updateProductImages(data);
@@ -112,7 +110,48 @@ function updateElement(elementId, value) {
 let currentImageIndex = 0;
 let productImages = [];
 
-// Update product images
+// Enhanced touch navigation with better performance
+function initializeTouchNavigation() {
+    const mainImage = document.getElementById('productMainImage');
+    if (!mainImage) return;
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isSwiping = false;
+    let startTime = 0;
+
+    mainImage.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        startTime = Date.now();
+        isSwiping = true;
+    }, { passive: true });
+
+    mainImage.addEventListener('touchmove', (e) => {
+        if (!isSwiping) return;
+        touchEndX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    mainImage.addEventListener('touchend', (e) => {
+        if (!isSwiping) return;
+        isSwiping = false;
+        
+        const endTime = Date.now();
+        const swipeDuration = endTime - startTime;
+        const swipeDistance = touchEndX - touchStartX;
+        const swipeThreshold = 50;
+        const timeThreshold = 300; // milliseconds
+
+        if (Math.abs(swipeDistance) > swipeThreshold && swipeDuration < timeThreshold) {
+            if (swipeDistance > 0) {
+                navigateImages('prev');
+            } else {
+                navigateImages('next');
+            }
+        }
+    }, { passive: true });
+}
+
+// Optimize image loading for mobile
 function updateProductImages(data) {
     if (!data.image_urls?.length) return;
 
@@ -120,51 +159,62 @@ function updateProductImages(data) {
     currentImageIndex = 0;
 
     const mainImage = document.getElementById('productMainImage');
+    if (!mainImage) return;
     
-    // Mobil cihazlar için daha küçük görüntüler
-    if (window.innerWidth <= 768) {
-        mainImage.style.maxHeight = '300px';
-    } else {
-        mainImage.style.maxHeight = 'none';
-    }
+    const isMobile = window.innerWidth <= 768;
+    
+    // Set appropriate image size based on device
+    mainImage.style.maxHeight = isMobile ? '300px' : 'none';
+    mainImage.style.width = '100%';
+    mainImage.style.objectFit = 'contain';
 
+    // Load main image with lazy loading
     mainImage.src = productImages[0];
-    mainImage.alt = getCurrentLang() === 'ar' ? data.name_ar || data.name : data.name;
+    mainImage.alt = data.name;
 
+    // Update thumbnails with optimized loading
     updateThumbnails();
 }
 
-// Update thumbnails
+// Optimize thumbnail loading
 function updateThumbnails() {
     const additionalImagesContainer = document.getElementById('additionalImages');
+    if (!additionalImagesContainer) return;
+    
     additionalImagesContainer.innerHTML = productImages.map((url, index) => `
         <img src="${url}" 
-             alt="Product thumbnail" 
+             alt="Product thumbnail ${index + 1}" 
              class="additional-image ${index === currentImageIndex ? 'active' : ''}" 
              onclick="changeMainImage('${url}', ${index})"
+             loading="lazy"
              style="animation-delay: ${index * 0.15}s">
     `).join('');
 }
 
-// Change main image with animation
+// Add performance optimization for image changes
 function changeMainImage(src, index) {
     const mainImage = document.getElementById('productMainImage');
+    if (!mainImage) return;
+    
     mainImage.classList.add('fade-out');
     currentImageIndex = index;
     
-    setTimeout(() => {
+    // Preload the new image
+    const img = new Image();
+    img.onload = () => {
         mainImage.src = src;
         mainImage.classList.remove('fade-out');
         mainImage.classList.add('fade-in');
         updateThumbnails();
-    }, 200);
+    };
+    img.src = src;
 }
 
 // Navigate images
 function navigateImages(direction) {
     if (!productImages.length) return;
 
-    const isRTL = getCurrentLang() === 'ar';
+    const isRTL = document.documentElement.dir === 'rtl';
     
     if (direction === 'next') {
         currentImageIndex = isRTL ? 
@@ -182,10 +232,9 @@ function navigateImages(direction) {
 // Update WhatsApp button
 function updateWhatsAppButton(data) {
     const whatsappBtn = document.getElementById('whatsappBtn');
-    const isRTL = getCurrentLang() === 'ar';
-    const productName = isRTL ? data.name_ar || data.name : data.name;
-    const productCategory = isRTL ? data.category_ar || data.category : data.category;
-    const message = encodeURIComponent(`${getTranslation('whatsappMessage')} ${productName} (${productCategory})`);
+    if (!whatsappBtn) return;
+    
+    const message = encodeURIComponent(`Hi, I'm interested in ${data.name} (${data.category})`);
     whatsappBtn.href = `https://wa.me/905301288498?text=${message}`;
 }
 
@@ -196,8 +245,11 @@ function initializeMobileMenu() {
     const closeMenu = document.querySelector('.close_menu');
     const body = document.body;
     
+    // Only initialize if menu elements exist
+    if (!menuToggle || !links) return;
+    
     // Toggle menu
-    menuToggle?.addEventListener('click', () => {
+    menuToggle.addEventListener('click', () => {
         links.classList.add('active');
         body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
     });
@@ -236,86 +288,57 @@ function initializeMobileMenu() {
     });
 }
 
-// Header scroll effect
-function initializeHeaderScroll() {
-    const header = document.getElementById('header');
-    let lastScrollTop = 0;
-    
-    window.addEventListener('scroll', () => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // Add scrolled class when scrolling down
-        if (scrollTop > 50) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-        
-        // Hide/show header based on scroll direction
-        if (scrollTop > lastScrollTop && scrollTop > 100) {
-            // Scrolling down
-            header.style.transform = 'translateY(-100%)';
-        } else {
-            // Scrolling up
-            header.style.transform = 'translateY(0)';
-        }
-        
-        lastScrollTop = scrollTop;
-    });
-}
-
-// Dokunmatik cihazlar için görüntü gezinme işlevselliği
-function initializeTouchNavigation() {
-    const mainImage = document.getElementById('productMainImage');
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    mainImage.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    });
-
-    mainImage.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    });
-
-    function handleSwipe() {
-        const swipeThreshold = 50;
-        const swipeDistance = touchEndX - touchStartX;
-
-        if (Math.abs(swipeDistance) > swipeThreshold) {
-            if (swipeDistance > 0) {
-                navigateImages('prev');
-            } else {
-                navigateImages('next');
-            }
-        }
-    }
-}
-
-// Initialize when document is ready
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-    initializeMobileMenu();
-    initializeHeaderScroll();
-    initializeTouchNavigation();
-    
-    // Initialize language
-    const currentLang = getCurrentLang();
-    updateLanguage(currentLang);
-    
-    // Add language switcher event listeners
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            updateLanguage(btn.dataset.lang);
-        });
-    });
-
-    // Pencere boyutu değiştiğinde görüntüleri güncelle
-    window.addEventListener('resize', () => {
+// Add resize handler with debounce
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
         const productData = document.getElementById('productName')?.dataset.productData;
         if (productData) {
             updateProductImages(JSON.parse(productData));
         }
-    });
-}); 
+    }, 250);
+});
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure Google Translate doesn't break UI elements
+    if (window.MutationObserver) {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && document.body.classList.contains('translated-rtl')) {
+                    // Apply RTL fixes
+                    document.documentElement.dir = 'rtl';
+                    document.body.classList.add('rtl');
+                } else if (mutation.type === 'childList' && document.body.classList.contains('translated-ltr')) {
+                    // Reset to LTR
+                    document.documentElement.dir = 'ltr';
+                    document.body.classList.remove('rtl');
+                }
+            });
+        });
+        
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class'],
+            childList: false,
+            characterData: false
+        });
+    }
+    
+    loadProductDetails();
+    initializeTouchNavigation();
+    
+    // Fix Google Translate frame overlap
+    setTimeout(function() {
+        const frameWrapper = document.querySelector('.VIpgJd-ZVi9od-ORHb-OEVmcd');
+        if (frameWrapper) {
+            frameWrapper.style.display = 'none';
+        }
+        document.body.style.top = '0 !important';
+    }, 1000);
+});
+
+// Make image navigation functions global for HTML event handlers
+window.changeMainImage = changeMainImage;
+window.navigateImages = navigateImages; 

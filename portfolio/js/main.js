@@ -41,11 +41,33 @@ function updateLanguage(lang) {
         btn.classList.toggle('active', btn.dataset.lang === lang);
     });
 
+    // Update language direction class on body
+    document.body.classList.toggle('rtl', lang === 'ar');
+
     // Update translations
     updateTranslations();
     
     // Reload products to update their translations
     loadProducts();
+    
+    // Fix mobile menu direction for RTL languages
+    if (lang === 'ar') {
+        const mobileMenu = document.getElementById('links');
+        if (mobileMenu) {
+            if (window.innerWidth <= 992) {
+                mobileMenu.style.left = 'auto';
+                mobileMenu.style.right = '-100%';
+                mobileMenu.classList.add('rtl-menu');
+            }
+        }
+    } else {
+        const mobileMenu = document.getElementById('links');
+        if (mobileMenu) {
+            mobileMenu.style.left = '';
+            mobileMenu.style.right = '';
+            mobileMenu.classList.remove('rtl-menu');
+        }
+    }
 }
 
 // Initialize all responsive functionality
@@ -95,6 +117,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     const langSpan = langBtn.querySelector('span');
                     if (langSpan) {
                         langSpan.textContent = langText;
+                    }
+                }
+                
+                // Close language dropdown and mobile menu if open
+                const dropdown = document.querySelector('.language-switcher.show');
+                if (dropdown) {
+                    const dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+                    if (dropdownToggle) {
+                        const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                        if (bsDropdown) bsDropdown.hide();
+                    }
+                }
+                
+                // Close mobile menu
+                const navLinks = document.getElementById('links');
+                if (navLinks && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+                
+                // Apply RTL-specific styles immediately for better UX
+                if (lang === 'ar') {
+                    if (window.adjustRTLStyles) {
+                        window.adjustRTLStyles();
+                    }
+                } else {
+                    if (window.resetRTLStyles) {
+                        window.resetRTLStyles();
                     }
                 }
             }
@@ -198,10 +248,10 @@ async function loadProducts(searchQuery = '') {
             const productCategory = isRTL ? product.category_ar || product.category : product.category;
 
             productCards.innerHTML += `
-            <div class="product-card" style="width: 500px;">
-                <div class="product-image" style="height: 100%; width: 100%;">
-                    <img src="${primaryImage}" alt="${productName}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <div class="product-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="${primaryImage}" alt="${productName}">
+                    <div class="product-overlay">
                         <a href="cart.html?id=${product.id}" class="view-details-btn">
                             <i class="fas fa-eye"></i> <font color="white">${getTranslation('viewDetails')}</font>
                         </a>
@@ -380,6 +430,7 @@ function handleResponsive() {
     const menuToggle = document.getElementById('menu-toggle');
     const closeMenu = document.querySelector('.close_menu');
     const allLinks = document.querySelectorAll('.links a');
+    const isRTL = document.documentElement.dir === 'rtl';
 
     // Header scroll effect with throttle
     let lastScrollPosition = 0;
@@ -406,6 +457,14 @@ function handleResponsive() {
     if (menuToggle) {
         menuToggle.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent event from bubbling up
+            
+            // Handle RTL direction for mobile menu
+            if (isRTL) {
+                navLinks.style.right = '0';
+            } else {
+                navLinks.style.left = '0';
+            }
+            
             navLinks.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
         });
@@ -414,6 +473,14 @@ function handleResponsive() {
     if (closeMenu) {
         closeMenu.addEventListener('click', (e) => {
             e.stopPropagation(); // Prevent event from bubbling up
+            
+            // Handle RTL direction for mobile menu
+            if (isRTL) {
+                navLinks.style.right = '-100%';
+            } else {
+                navLinks.style.left = '-100%';
+            }
+            
             navLinks.classList.remove('active');
             document.body.style.overflow = ''; // Restore scrolling
         });
@@ -424,6 +491,14 @@ function handleResponsive() {
         if (navLinks.classList.contains('active') && 
             !navLinks.contains(e.target) && 
             !menuToggle.contains(e.target)) {
+                
+            // Handle RTL direction for mobile menu
+            if (isRTL) {
+                navLinks.style.right = '-100%';
+            } else {
+                navLinks.style.left = '-100%';
+            }
+                
             navLinks.classList.remove('active');
             document.body.style.overflow = '';
         }
@@ -433,6 +508,13 @@ function handleResponsive() {
     allLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             if (navLinks.classList.contains('active')) {
+                // Handle RTL direction for mobile menu
+                if (isRTL) {
+                    navLinks.style.right = '-100%';
+                } else {
+                    navLinks.style.left = '-100%';
+                }
+                
                 navLinks.classList.remove('active');
                 document.body.style.overflow = '';
             }
@@ -460,10 +542,20 @@ function handleResponsive() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
             if (window.innerWidth > 992 && navLinks.classList.contains('active')) {
+                // Reset styles when viewport becomes larger
+                navLinks.style.left = '';
+                navLinks.style.right = '';
                 navLinks.classList.remove('active');
                 document.body.style.overflow = '';
             }
             updateProductGrid();
+            
+            // Check if RTL and apply appropriate styles
+            if (document.documentElement.dir === 'rtl') {
+                if (window.adjustRTLStyles) {
+                    window.adjustRTLStyles();
+                }
+            }
         }, 250);
     });
     
@@ -473,6 +565,38 @@ function handleResponsive() {
             e.preventDefault(); // Prevent default touch behavior
             menuToggle.click(); // Trigger the click event
         });
+    }
+    
+    // Add swipe to close menu for better mobile UX
+    if (navLinks) {
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        navLinks.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+        
+        navLinks.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const isRTL = document.documentElement.dir === 'rtl';
+            
+            // Calculate swipe distance and direction
+            const swipeDistance = Math.abs(touchEndX - touchStartX);
+            const swipeDirection = touchEndX - touchStartX;
+            
+            // Close menu on swipe (left for LTR, right for RTL)
+            if (swipeDistance > 70) {
+                if ((!isRTL && swipeDirection < 0) || (isRTL && swipeDirection > 0)) {
+                    if (isRTL) {
+                        navLinks.style.right = '-100%';
+                    } else {
+                        navLinks.style.left = '-100%';
+                    }
+                    navLinks.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        }, false);
     }
 }
 
@@ -489,13 +613,23 @@ function updateProductGrid() {
     else columns = 1;
 
     productsPerPage = columns * 3; // Update products per page based on grid
+    
+    // Adjust grid gap for better mobile display
+    if (width <= 576) {
+        productCards.style.gap = '15px';
+    } else if (width <= 768) {
+        productCards.style.gap = '20px';
+    } else {
+        productCards.style.gap = '30px';
+    }
+    
     currentPage = 1; // Reset to first page
     loadProducts(); // Reload products with new grid
 }
 
 // Enhanced animation on scroll with Intersection Observer
 function setupScrollAnimations() {
-    const animatedElements = document.querySelectorAll('.project_box, .feature-card');
+    const animatedElements = document.querySelectorAll('.project_box, .feature-card, .product-card');
     
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -516,4 +650,34 @@ function setupScrollAnimations() {
         element.style.transition = 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)';
         observer.observe(element);
     });
+    
+    // Add touch swipe detection for product navigation on mobile
+    if (window.innerWidth <= 768) {
+        const productSection = document.querySelector('.featured-products');
+        if (productSection) {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            productSection.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            productSection.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                const swipeThreshold = 50; // Minimum distance for swipe
+                if (touchEndX + swipeThreshold < touchStartX) {
+                    // Swipe left - go to next page
+                    changePage(currentPage + 1);
+                }
+                if (touchEndX > touchStartX + swipeThreshold) {
+                    // Swipe right - go to previous page
+                    changePage(currentPage - 1);
+                }
+            }
+        }
+    }
 }

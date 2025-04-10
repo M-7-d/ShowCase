@@ -246,7 +246,71 @@ function getCurrentLang() {
 function setCurrentLang(lang) {
     localStorage.setItem('language', lang);
     document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    
+    // Set RTL direction for Arabic
+    const isRTL = lang === 'ar';
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    
+    // Add specific classes for RTL support
+    if (isRTL) {
+        document.body.classList.add('rtl');
+        adjustRTLStyles();
+    } else {
+        document.body.classList.remove('rtl');
+        resetRTLStyles();
+    }
+}
+
+// Helper function to adjust styles for RTL layout
+function adjustRTLStyles() {
+    // Fix search input for RTL
+    const searchInput = document.getElementById('searchProducts');
+    if (searchInput) {
+        searchInput.style.textAlign = 'right';
+        searchInput.style.paddingRight = '15px';
+    }
+    
+    // Fix mobile menu for RTL
+    const navLinks = document.getElementById('links');
+    if (navLinks) {
+        navLinks.style.left = 'auto';
+        navLinks.style.right = '-100%';
+    }
+    
+    // Add any other RTL-specific adjustments
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        // Mobile-specific RTL adjustments
+        const menuItems = document.querySelectorAll('.links a');
+        menuItems.forEach(item => {
+            item.style.width = '100%';
+            item.style.textAlign = 'right';
+        });
+    }
+}
+
+// Helper function to reset RTL styles
+function resetRTLStyles() {
+    // Reset search input
+    const searchInput = document.getElementById('searchProducts');
+    if (searchInput) {
+        searchInput.style.textAlign = '';
+        searchInput.style.paddingRight = '';
+    }
+    
+    // Reset mobile menu
+    const navLinks = document.getElementById('links');
+    if (navLinks) {
+        navLinks.style.left = '';
+        navLinks.style.right = '';
+    }
+    
+    // Reset any other styles modified for RTL
+    const menuItems = document.querySelectorAll('.links a');
+    menuItems.forEach(item => {
+        item.style.width = '';
+        item.style.textAlign = '';
+    });
 }
 
 function getTranslation(key) {
@@ -265,4 +329,13 @@ function getTranslation(key) {
 window.translations = translations;
 window.getCurrentLang = getCurrentLang;
 window.setCurrentLang = setCurrentLang;
-window.getTranslation = getTranslation; 
+window.getTranslation = getTranslation;
+window.adjustRTLStyles = adjustRTLStyles;
+window.resetRTLStyles = resetRTLStyles;
+
+// Listen for window resize to adjust RTL styles if needed
+window.addEventListener('resize', () => {
+    if (document.documentElement.dir === 'rtl') {
+        adjustRTLStyles();
+    }
+}); 

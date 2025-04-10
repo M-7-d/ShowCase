@@ -31,6 +31,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Translate API -->
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <!-- First load Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Then load environment variables -->
@@ -45,6 +47,8 @@
     <script src="js/env.js"></script>
     <!-- Then load your config -->
     <script src="js/config.js"></script>
+    <!-- Then load translator.css -->
+    <link rel="stylesheet" href="css/translator.css">
     <!-- Finally load your admin.js -->
     <script src="js/admin.js"></script>
     <link rel="stylesheet" href="css/admin.css">
@@ -97,6 +101,120 @@
                 console.error('Supabase client not initialized');
                 document.getElementById('login-screen').classList.remove('d-none');
                 document.getElementById('admin-dashboard').classList.add('d-none');
+            }
+        });
+
+        // Google Translate Initialization
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,ar,tr',
+                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
+                autoDisplay: false
+            }, 'google_translate_element');
+            
+            // Language toggle button for admin page
+            document.addEventListener('DOMContentLoaded', function() {
+                const adminLanguageToggle = document.getElementById('admin-language-toggle');
+                if (adminLanguageToggle) {
+                    adminLanguageToggle.addEventListener('click', function() {
+                        const translateElement = document.getElementById('google_translate_element');
+                        translateElement.classList.toggle('show-translator');
+                        
+                        // No longer trying to force the dropdown open
+                    });
+                }
+                
+                // Handle clicks outside to close the dropdown
+                document.addEventListener('click', function(event) {
+                    const translateElement = document.getElementById('google_translate_element');
+                    const languageToggle = document.getElementById('admin-language-toggle');
+                    
+                    if (translateElement && 
+                        translateElement.classList.contains('show-translator') && 
+                        !translateElement.contains(event.target) &&
+                        languageToggle && 
+                        !languageToggle.contains(event.target)) {
+                        
+                        translateElement.classList.remove('show-translator');
+                    }
+                });
+            });
+        }
+        
+        // Direct language change function
+        function changeLanguage(langCode) {
+            console.log("Dil değiştirme isteği:", langCode);
+            // Check if applyLanguage function is available (from translator.js)
+            if (typeof applyLanguage === 'function') {
+                applyLanguage(langCode);
+            } else {
+                // Fallback to original method
+                const selectElement = document.querySelector('.goog-te-combo');
+                
+                if (selectElement) {
+                    // Set the value to the desired language
+                    selectElement.value = langCode;
+                    
+                    // Trigger events for better compatibility
+                    selectElement.dispatchEvent(new Event('change'));
+                    selectElement.dispatchEvent(new Event('click'));
+                    
+                    // Manually trigger Google's translation function if available
+                    if (typeof selectElement.onchange === 'function') {
+                        selectElement.onchange();
+                    }
+                    
+                    // Update the current language display
+                    const currentLang = document.getElementById('current-language');
+                    if (currentLang) {
+                        switch(langCode) {
+                            case 'ar': currentLang.textContent = 'AR'; break;
+                            case 'tr': currentLang.textContent = 'TR'; break;
+                            default: currentLang.textContent = 'EN';
+                        }
+                    }
+                    
+                    // Close the dropdown
+                    document.getElementById('language-dropdown-menu').classList.remove('show');
+                    
+                    // Store selected language in localStorage for persistence
+                    localStorage.setItem('selectedLanguage', langCode);
+                } else {
+                    console.error("Google Translate dropdown not found. Retrying in 1 second...");
+                    // If the Google Translate element is not yet loaded, retry after a delay
+                    setTimeout(() => changeLanguage(langCode), 1000);
+                }
+            }
+            
+            // Always close the dropdown menu
+            document.getElementById('language-dropdown-menu').classList.remove('show');
+        }
+        
+        // Language dropdown toggle for admin
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminLanguageToggle = document.getElementById('admin-language-toggle');
+            const dropdownMenu = document.getElementById('language-dropdown-menu');
+            
+            if (adminLanguageToggle && dropdownMenu) {
+                adminLanguageToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!adminLanguageToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Check for saved language preference and apply it
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                // Wait a moment for Google Translate to initialize
+                setTimeout(() => changeLanguage(savedLanguage), 1000);
             }
         });
     </script>
@@ -177,6 +295,23 @@
                             <a class="nav-link text-white-50 hover:text-white" href="#" id="logoutBtn">
                                 <i class="fas fa-sign-out-alt"></i> Logout
                             </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <button class="nav-link language-btn-admin w-100 text-white-50 hover:text-white" id="admin-language-toggle">
+                                <i class="fas fa-globe-americas"></i> <span id="current-language">EN</span> <i class="fas fa-chevron-down ms-1"></i>
+                            </button>
+                            <div class="admin-dropdown-menu" id="language-dropdown-menu">
+                                <a href="#" onclick="changeLanguage('en'); return false;" class="admin-dropdown-item">
+                                    <span class="flag-icon">🇺🇸</span> <span>English</span>
+                                </a>
+                                <a href="#" onclick="changeLanguage('tr'); return false;" class="admin-dropdown-item">
+                                    <span class="flag-icon">🇹🇷</span> <span>Türkçe</span>
+                                </a>
+                                <a href="#" onclick="changeLanguage('ar'); return false;" class="admin-dropdown-item">
+                                    <span class="flag-icon">🇸🇦</span> <span>العربية</span>
+                                </a>
+                            </div>
+                            <div id="google_translate_element" style="display: none;"></div>
                         </li>
                     </ul>
                 </div>
